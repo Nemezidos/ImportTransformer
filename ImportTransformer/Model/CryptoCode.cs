@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ImportTransformer.Model
+﻿namespace ImportTransformer.Model
 {
     public class CryptoCode
     {

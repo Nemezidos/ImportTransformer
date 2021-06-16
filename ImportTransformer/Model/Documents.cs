@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace ImportTransformer.Model
 {
-	//10319, 300, 321, 331, 915, 336
-	[XmlRoot(ElementName = "documents")]
+    //10319, 300, 321, 331, 915, 336
+    [XmlRoot(ElementName = "documents")]
 	public class Documents
 	{
 		[XmlElement(ElementName = "skzkm_foreign_emission")]

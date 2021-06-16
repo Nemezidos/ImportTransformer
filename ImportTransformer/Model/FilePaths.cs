@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ImportTransformer.Model
+﻿namespace ImportTransformer.Model
 {
-    public class FilePathes
+    public class FilePaths
     {
-
         public string Headers { get; set; }
         public string Santens { get; set; }
         public string Tracelink { get; set; }

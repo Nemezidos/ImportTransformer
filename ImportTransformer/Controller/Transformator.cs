@@ -1,15 +1,18 @@
 ﻿using ImportTransformer.Model;
-using System;
+using NLog;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ImportTransformer.Controller
 {
     class Transformator
     {
-        public static List<CryptoCode> Filter(List<CryptoCode> codes, List<SantensReport> santensReports)
+        private const int MaxSize = 900_000;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        public static IEnumerable<CryptoCode> Filter(IEnumerable<CryptoCode> codes, IEnumerable<SantensReport> santensReports)
         {
             List<string> cont = new List<string>();
             List<CryptoCode> result = new List<CryptoCode>();
@@ -30,87 +33,88 @@ namespace ImportTransformer.Controller
             return result;
         }
 
-        public static void Sorter(List<CryptoCode> codes, List<SantensReport> santensReports)
+        public static void SplitAllMultiPackInDir(string dir)
         {
-
-        }
-
-        public static void Linker(List<CryptoCode> codes, List<SantensReport> santensReports)
-        {
-
-        }
-
-        public static void Split(string dir)
-        {
-            int maxSize = 800_000;
+            
 
             var files = Directory.GetFiles(dir + @"\forUpload", "*915*.xml")
-                .Where(s => new FileInfo(s).Length >= maxSize)
+                .Where(s => new FileInfo(s).Length >= MaxSize)
                 .Select(s => new { filepath = s, fileSize = new FileInfo(s).Length });
+
+            var tasks = new List<Task>();
 
             foreach (var file in files)
             {
-                var parts = Convert.ToInt32(Math.Ceiling(Convert.ToDouble(file.fileSize / maxSize)));
-
-                var doc = Serializer.DeSerializer(file.filepath);
-
-                FileInfo fi = new FileInfo(file.filepath);
-                string name = fi.Name;
-                name = name.Remove(name.Length - 4);
-
-                string operDate = doc.Multi_pack.Operation_date;
-                string subjectId = doc.Multi_pack.Subject_id;
-
-                List<Detail> elements = doc.Multi_pack.By_sgtin.Detail.OrderByDescending(s => s.Content.Sgtin.Count()).ToList();
-
-                var arr = new List<Detail>[parts];
-
-                for (int i = 0; i < parts; i++)
-                {
-                    arr[i] = new List<Detail>();
-                }
-
-                int prefix;
-                int suffix;
-                for (int i = 0; i < (elements.Count() / 2) + 1; i++)
-                {
-                    prefix = i;
-                    suffix = elements.Count() - i - 1;
-                    if (prefix < suffix)
-                    {
-                        arr[i % parts].Add(elements[prefix]);
-                        arr[i % parts].Add(elements[suffix]);
-                    }
-                    else
-                    {
-                        if (prefix == suffix)
-                            arr[i % parts].Add(elements[prefix]);
-                    }
-                }
-
-                for (int i = 0; i < parts; i++)
-                {
-                    string tempName = $"{name}_{i + 1}.xml";
-
-                    Documents splittedDoc = new Documents
-                    {
-                        Version = "1.35",
-                        Multi_pack = new Multi_pack()
-                    };
-                    splittedDoc.Multi_pack.Action_id = "915";
-                    splittedDoc.Multi_pack.Operation_date = operDate;
-                    splittedDoc.Multi_pack.Subject_id = subjectId;
-                    splittedDoc.Multi_pack.By_sgtin = new By_sgtin
-                    {
-                        Detail = new List<Detail>()
-                    };
-                    splittedDoc.Multi_pack.By_sgtin.Detail.AddRange(arr[i]);
-
-                    Logging.LogFileName(tempName, dir);
-
-                    Serializer.SerializerXml(dir + @"\forUpload\" + tempName, splittedDoc);
-                }
+                SplitSingleMultiPack(file.filepath, file.fileSize);
             }
+        }
+
+        private static void SplitSingleMultiPack(string filePath, long fileSize)
+        {
+            var parts = (int)(fileSize / MaxSize);
+            if (fileSize % MaxSize > 0)
+                parts++;
+
+            var doc = Serializer.DeSerializer(filePath);
+
+            FileInfo fi = new FileInfo(filePath);
+            string name = fi.Name;
+            name = name.Remove(name.Length - 4);
+            string dir = fi.DirectoryName;
+
+            var arr = SplitContentOfMultiPack(doc.Multi_pack.By_sgtin.Detail.OrderByDescending(s => s.Content.Sgtin.Count()).ToList(), parts);
+
+            var tasks = new List<Task>();
+
+            for (int i = 0; i < parts; i++)
+            {
+                string tempName = $"{name}_{i + 1}.xml";
+
+                Documents splittedDoc = new Documents
+                {
+                    Version = "1.36",
+                    Multi_pack = new Multi_pack
+                    {
+                        Action_id = "915",
+                        Operation_date = doc.Multi_pack.Operation_date,
+                        Subject_id = doc.Multi_pack.Subject_id,
+                        By_sgtin = new By_sgtin 
+                        { 
+                            Detail = arr[i]
+                        }
+                    }
+                };
+                tasks.Add(Task.Run(() => Serializer.SerializerXml(dir + @"\forUpload\" + tempName, splittedDoc)));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+            logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {parts}");
+        }
+
+        private static List<Detail>[] SplitContentOfMultiPack(List<Detail> elements, int parts)
+        {
+            var arr = new List<Detail>[parts];
+
+            for (int i = 0; i < parts; i++)
+            {
+                arr[i] = new List<Detail>();
+            }
+
+            int prefix = 0;
+            int suffix = elements.Count() - 1;
+            while (prefix < suffix)
+            {
+                arr[prefix % parts].Add(elements[prefix]);
+                arr[prefix % parts].Add(elements[suffix]);
+
+                prefix++;
+                suffix--;
+            }
+            if (prefix == suffix)
+                arr[prefix % parts].Add(elements[prefix]);
+
+            return arr;
         }
     }
 }

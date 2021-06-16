@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ImportTransformer.Controller
 {
@@ -15,7 +14,7 @@ namespace ImportTransformer.Controller
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static List<CryptoCode> InputCsv(string path)
+        public static IEnumerable<CryptoCode> InputCsv(string path)
         {
             List<CryptoCode> codes = new List<CryptoCode>();
             List<string[]> temp = new List<string[]>();
@@ -24,9 +23,7 @@ namespace ImportTransformer.Controller
             {
                 while (!sr.EndOfStream)
                 {
-                    string[] args = sr.ReadLine().Split(',');
-
-                    temp.Add(args);
+                    temp.Add(sr.ReadLine().Split(','));
                 }
             }
 
@@ -47,7 +44,12 @@ namespace ImportTransformer.Controller
             return codes;
         }
 
-        public static List<CryptoCode> InputCsvTestOrder(string path)
+        /// <summary>
+        /// Использовалось при тестах. Возможно понадобиться на следующих итерациях
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static IEnumerable<CryptoCode> InputCsvTestOrder(string path)
         {
             List<CryptoCode> codes = new List<CryptoCode>();
             List<string> temp = new List<string>();
@@ -56,9 +58,7 @@ namespace ImportTransformer.Controller
             {
                 while (!sr.EndOfStream)
                 {
-                    string args = sr.ReadLine();
-
-                    temp.Add(args);
+                    temp.Add(sr.ReadLine());
                 }
             }
 
@@ -83,7 +83,7 @@ namespace ImportTransformer.Controller
         /// <param name="path">путь к файлу отчета</param>
         /// <param name="page">0 - паллета/короб, 1 - короб/штука</param>
         /// <returns></returns>
-        public static List<SantensReport> InputReport(string path, int page)
+        public static IEnumerable<SantensReport> InputReport(string path, int page)
         {
             // If you use EPPlus in a noncommercial context
             // according to the Polyform Noncommercial license:
@@ -91,10 +91,9 @@ namespace ImportTransformer.Controller
 
             List<SantensReport> data = new List<SantensReport>();
 
-            //using OfficeOpenXml;
             using (ExcelPackage xlPackage = new ExcelPackage(new FileInfo(path)))
             {
-                var myWorksheet = xlPackage.Workbook.Worksheets[page]; //xlPackage.Workbook.Worksheets.First(); //select sheet here
+                var myWorksheet = xlPackage.Workbook.Worksheets[page];
                 var totalRows = myWorksheet.Dimension.End.Row;
                 var totalColumns = myWorksheet.Dimension.End.Column;
 
@@ -103,9 +102,7 @@ namespace ImportTransformer.Controller
                 for (int rowNum = 4; rowNum <= totalRows; rowNum++)
                 {
                     if (myWorksheet.Cells[rowNum, 2].Value != null)
-                    {
                         blocks.Add(rowNum);
-                    }
                 }
                 blocks.Add(totalRows);
 
@@ -119,9 +116,7 @@ namespace ImportTransformer.Controller
                     for (int j = startRow; j <= lastRow; j++)
                     {
                         if (myWorksheet.Cells[j, 4].Value != null)
-                        {
                             temp.Add(myWorksheet.Cells[j, 4].Value.ToString());
-                        }
                     }
                     data.Add(new SantensReport(myWorksheet.Cells[blocks[i], 4].Value.ToString(), temp));
                 }
@@ -137,33 +132,26 @@ namespace ImportTransformer.Controller
 
             SupportDate data = new SupportDate();
 
-            //using OfficeOpenXml;
             using (ExcelPackage xlPackage = new ExcelPackage(new FileInfo(path)))
             {
-                var myWorksheet = xlPackage.Workbook.Worksheets.First(); //xlPackage.Workbook.Worksheets.First(); //select sheet here
+                var myWorksheet = xlPackage.Workbook.Worksheets.First();
 
                 data.TracelinkFilename = myWorksheet.Cells["B2"].Value.ToString();
                 data.SantensFilename = myWorksheet.Cells["B3"].Value.ToString();
                 data.Gtin = myWorksheet.Cells["B4"].Value.ToString();
                 data.Batch = myWorksheet.Cells["B5"].Value.ToString();
 
-                DateTime tempDate = new DateTime();
-                if (DateTime.TryParse(myWorksheet.Cells["B6"].Value.ToString(), out tempDate))
-                {
+                if (DateTime.TryParse(myWorksheet.Cells["B6"].Value.ToString(), out DateTime tempDate))
                     data.ExpirationDate = tempDate;
-                }
                 
                 data.DocNum = myWorksheet.Cells["B7"].Value.ToString();
 
-                tempDate = new DateTime();
                 if (DateTime.TryParse(myWorksheet.Cells["B8"].Value.ToString(), out tempDate))
-                {
                     data.DocDate = tempDate;
-                }
-                
-
             }
             return data;
         }
+
+        
     }
 }

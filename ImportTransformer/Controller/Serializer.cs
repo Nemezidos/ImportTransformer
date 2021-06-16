@@ -1,6 +1,5 @@
 ﻿using ImportTransformer.Model;
-using System;
-using System.Collections.Generic;
+using NLog;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -10,6 +9,8 @@ namespace ImportTransformer.Controller
 {
     class Serializer
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static Documents DeSerializer(string file)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(Documents));
@@ -21,14 +22,14 @@ namespace ImportTransformer.Controller
                 doc = (Documents)serializer.Deserialize(reader);
             }
 
+            logger.Info($"Принят файл {file}");
+
             return doc;
         }
 
         public static void SerializerXml(string path, Documents doc)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(Documents));
-
-            //Для корректировки неймспейса можно здесь записать это в строку, привести к билдеру и скорректировать принудительно.
 
             XmlWriterSettings settings = new XmlWriterSettings() { OmitXmlDeclaration = false, Indent = true, Encoding = new UTF8Encoding(false) };
 
@@ -38,7 +39,7 @@ namespace ImportTransformer.Controller
                 var a = XmlWriter.Create(writer, settings);
                 serializer.Serialize(a, doc);
             }
-
+            logger.Info($"Создан файл {path}");
         }
     }
 }

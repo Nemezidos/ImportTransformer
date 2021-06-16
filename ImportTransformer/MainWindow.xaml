@@ -3,14 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ImportTransformer" xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        xmlns:local="clr-namespace:ImportTransformer" 
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
-        Title="Utrace" Height="465" 
+        Title="Utrace: Allergan. Маркировка на ТС" 
+        Height="465" 
         Width="810"
-        MinHeight="465"
-        MinWidth="810"
-        MaxHeight="465"
-        MaxWidth="810">
+        >
     <Window.Resources>
         <SolidColorBrush x:Key="textBlockColorBackground" Color="White"/>
         <sys:Double x:Key="fontSizeTextBlock">14</sys:Double>
@@ -18,149 +17,194 @@
         <Thickness x:Key="paddingSize">5</Thickness>
         <TextAlignment x:Key="textBlockTextAlignment">Left</TextAlignment>
     </Window.Resources>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Background="#FFE5E5E5" Orientation="Vertical">
 
-    <Grid Background="#FFE5E5E5">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="25"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="Файл заголовков:"  
+                               Margin="3" 
+                               Grid.Column="0"
+                               Grid.Row="0"
+                               TextWrapping="Wrap"/>
 
-        <Grid Margin="10,0,10,307">
-            <TextBlock HorizontalAlignment="Left" 
-                               Margin="10,0,0,0" 
-                               Text="Файл заголовков:" 
-                               TextWrapping="Wrap" 
-                               VerticalAlignment="Top" 
-                               Width="191" />
-
-            <TextBox HorizontalAlignment="Left" 
-                             Margin="10,21,0,0" 
+                    <TextBox x:Name="PathToHeaderFile"
                              Text="" 
                              TextWrapping="Wrap" 
-                             VerticalAlignment="Top" 
-                             Width="742" 
-                             Name="PathToHeaderFile"/>
+                             Margin="3" 
+                             Grid.Column="0"
+                             Grid.Row="1"/>
 
-            <Button Content="..." 
-                            HorizontalAlignment="Left" 
-                            Margin="757,21,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="18" 
-                            Width="23" 
+                    <Button x:Name="HeaderFile"
+                            Content="..." 
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            Margin="3"
                             Background="Wheat"
-                            Name="HeaderFile"
+                            
                             Click="GetHeaderFile"/>
+                </Grid>
 
-            <Button Content="Create Header File" 
-                            HorizontalAlignment="Left" 
-                            Margin="10,44,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="18" 
-                            Width="139" 
-                            Background="White"
-                            Click="CreateHeaderFile"/>
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="25"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="Сопроводительный файл:"
+                               Margin="3" 
+                               Grid.Column="0"
+                               Grid.Row="0"
+                               TextWrapping="Wrap"/>
 
-            <TextBlock HorizontalAlignment="Left" 
-                               Margin="10,75,0,0" 
-                               Text="Сопроводительный файл:" 
-                               TextWrapping="Wrap" 
-                               VerticalAlignment="Top" 
-                               Width="192" />
-
-            <TextBox HorizontalAlignment="Left" 
-                             Margin="10,100,0,0" 
+                    <TextBox x:Name="PathToSupportFile"
+                             Margin="3" 
+                             Grid.Column="0"
+                             Grid.Row="1"
                              Text="" 
-                             TextWrapping="Wrap" 
-                             VerticalAlignment="Top" 
-                             Width="742" 
-                             Name="PathToSupportFile"/>
+                             TextWrapping="Wrap"/>
 
-            <Button Content="..." 
-                            HorizontalAlignment="Left" 
-                            Margin="757,100,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="18" 
-                            Width="23" 
+                    <Button x:Name="SupportFile"
+                            Content="..."
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            Margin="3" 
                             Background="Wheat"
-                            Name="SupportFile"
                             Click="GetSupportFile"/>
 
-        </Grid>
-        <Grid Margin="0,132,0,232">
-            <CheckBox Content="Util+300+321"
-                      Margin="29,22,665,22"
-                      IsChecked="True"
-                      Name="FirstPart"/>
+                </Grid>
 
-            <CheckBox Content="915+331+336"
-                      Margin="169,22,525,22"
-                      IsChecked="True"
-                      Name="SecondPart"/>
-        </Grid>
-        <Grid Margin="10,207,10,121">
-            <TextBlock HorizontalAlignment="Left" 
-                               Margin="10,10,0,0" 
-                               Text="Файл Santens:" 
-                               TextWrapping="Wrap" 
-                               VerticalAlignment="Top" 
-                               Width="191" />
-            <TextBox HorizontalAlignment="Left" 
-                             Margin="10,31,0,0" 
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="25"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Файл Santens:" 
+                               Margin="3"
+                               Grid.Row="0"
+                               Grid.Column="0"
+                               TextWrapping="Wrap"/>
+
+                    <TextBox x:Name="PathToSantensFile"
+                             Margin="3" 
                              Text="" 
+                             Grid.Row="1"
+                             Grid.Column="0"
                              TextWrapping="Wrap" 
-                             VerticalAlignment="Top" 
-                             Width="732" 
-                             Name="PathToSantensFile"/>
+                             VerticalAlignment="Top"/>
 
-            <Button Content="..." 
-                            HorizontalAlignment="Left" 
-                            Margin="747,31,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="18" 
-                            Width="23" 
+                    <Button x:Name="SantensFile"
+                            Content="..." 
+                            Margin="3"
+                            Grid.Row="1"
+                            Grid.Column="1" 
                             Background="Wheat"
-                            Name="SantensFile"
                             Click="GetSantensFile"/>
+                </Grid>
 
-            <TextBlock HorizontalAlignment="Left" 
-                               Margin="10,54,0,0" 
-                               Text="Файл Tracelink:" 
-                               TextWrapping="Wrap" 
-                               VerticalAlignment="Top" 
-                               Width="191" />
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="25"/>
+                    </Grid.ColumnDefinitions>
 
-            <TextBox HorizontalAlignment="Left" 
-                             Margin="10,75,0,0" 
+                    <TextBlock Text="Файл Tracelink:"
+                               Margin="3,0,0,0"
+                               Grid.Row="0"
+                               Grid.Column="0"
+                               TextWrapping="Wrap" />
+
+                    <TextBox x:Name="PathToTracelinkFile"
+                             Margin="3"
+                             Grid.Row="1"
+                             Grid.Column="0"
                              Text="" 
-                             TextWrapping="Wrap" 
-                             VerticalAlignment="Top" 
-                             Width="732" 
-                             Name="PathToTracelinkFile"/>
+                             TextWrapping="Wrap"/>
 
-            <Button Content="..." 
-                            HorizontalAlignment="Left" 
-                            Margin="747,75,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="18" 
-                            Width="23" 
+                    <Button x:Name="TracelinkFile"
+                            Margin="3"
+                            Grid.Row="1"
+                            Grid.Column="1"
                             Background="Wheat"
-                            Name="TracelinkFile"
+                            Content="..." 
                             Click="GetTracelinkFile"/>
-        </Grid>
-        <Grid Margin="10,318,10,10">
-            <Button Content="Make Messages" 
-                            HorizontalAlignment="Left" 
-                            Margin="395,10,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="85" 
-                            Width="375" 
+                </Grid>
+                <Grid Margin="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <CheckBox Content="Util+300+321"
+                      Grid.Column="0"
+                      Margin="3"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      IsChecked="True"
+                      x:Name="FirstPart"/>
+
+                    <CheckBox Content="915+331+336"
+                      Grid.Column="1"
+                      Margin="3"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      IsChecked="True"
+                      x:Name="SecondPart"/>
+
+                    <Button Content=" Create Header File " 
+                            Grid.Column="2"
+                            Margin="3"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="White"
+                            Click="CreateHeaderFile"/>
+                </Grid>
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="100"/>
+                    </Grid.RowDefinitions>
+                    <Button Content="Make Messages"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            Margin="5"
                             Background="YellowGreen"
                             Click="MakeMessages"/>
 
-            <Button Content="Instruction" 
-                            HorizontalAlignment="Left" 
-                            Margin="10,10,0,0" 
-                            VerticalAlignment="Top" 
-                            Height="85" 
-                            Width="380"
+                    <Button Content="Instruction"  
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Margin="5" 
                             Click="ShowInstruction"
                             Background="Goldenrod"/>
-        </Grid>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Window>
