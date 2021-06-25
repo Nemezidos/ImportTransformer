@@ -15,7 +15,8 @@ namespace ImportTransformer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static Logger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private static string OpenDirectory { get; set; }
         public MainWindow()
         {
             InitializeComponent();
@@ -27,10 +28,6 @@ namespace ImportTransformer
 
         private void GetHeaderFile(object sender, RoutedEventArgs e)
         {
-            if (false)
-            {
-
-            }
             var openFileDialog = new OpenFileDialog
             {
                 InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -40,58 +37,65 @@ namespace ImportTransformer
             if (openFileDialog.ShowDialog() == true)
             {
                 var fileInfo = new FileInfo(openFileDialog.FileName);
-                PathToHeaderFile.Text = (fileInfo.FullName);
+                PathToHeaderFile.Text = fileInfo.FullName;
             }
         }
 
         private void GetSantensFile(object sender, RoutedEventArgs e)
         {
+            OpenDirectory = string.IsNullOrEmpty(OpenDirectory) ? Directory.GetCurrentDirectory() : string.Empty;
             var openFileDialog = new OpenFileDialog
             {
-                InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                InitialDirectory = OpenDirectory,// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".xlsx",
                 Filter = "Worksheets (*.xlsx)|*.xlsx|Tables (*.csv)|*.csv|All Files (*.*)|*.*"
             };
             if (openFileDialog.ShowDialog() == true)
             {
                 var fileInfo = new FileInfo(openFileDialog.FileName);
-                PathToSantensFile.Text = (fileInfo.FullName);
+                OpenDirectory = fileInfo.Directory?.FullName;
+                PathToSantensFile.Text = fileInfo.FullName;
             }
         }
 
         private void GetTracelinkFile(object sender, RoutedEventArgs e)
         {
+            OpenDirectory = string.IsNullOrEmpty(OpenDirectory) ? Directory.GetCurrentDirectory() : string.Empty;
             var openFileDialog = new OpenFileDialog
             {
-                InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                InitialDirectory = OpenDirectory,// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".csv",
                 Filter = "Tables (*.csv)|*.csv|Worksheets (*.xlsx)|*.xlsx|All Files (*.*)|*.*"
             };
             if (openFileDialog.ShowDialog() == true)
             {
                 var fileInfo = new FileInfo(openFileDialog.FileName);
-                PathToTracelinkFile.Text = (fileInfo.FullName);
+                OpenDirectory = fileInfo.Directory?.FullName;
+                PathToTracelinkFile.Text = fileInfo.FullName;
             }
         }
 
         private void GetSupportFile(object sender, RoutedEventArgs e)
         {
+            OpenDirectory = string.IsNullOrEmpty(OpenDirectory) ? Directory.GetCurrentDirectory() : string.Empty;
             var openFileDialog = new OpenFileDialog
             {
-                InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                InitialDirectory = OpenDirectory,// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".xlsx",
                 Filter = "Worksheets (*.xlsx)|*.xlsx|Tables (*.csv)|*.csv|All Files (*.*)|*.*"
             };
             if (openFileDialog.ShowDialog() == true)
             {
                 var fileInfo = new FileInfo(openFileDialog.FileName);
-                PathToSupportFile.Text = (fileInfo.FullName);
+                OpenDirectory = fileInfo.Directory?.FullName;
+                PathToSupportFile.Text = fileInfo.FullName;
             }
         }
 
         private void CreateHeaderFile(object sender, RoutedEventArgs e)
         {
-            Core.CreateHeader(true, out var _);
+            Core.CreateHeader(true, out var path);
+            MessageBox.Show($"Создан новый файл заголовков. \nПуть: {path}");
         }
 
         #endregion
@@ -167,7 +171,7 @@ namespace ImportTransformer
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Возникла ошибка: {ex.Message} \n{ex.StackTrace}");
+                Logger.Error(ex, $"Возникла ошибка: {ex.Message} \n{ex.StackTrace}");
                 MessageBox.Show(ex.Message,
                                 "Exception",
                                 MessageBoxButton.OK,

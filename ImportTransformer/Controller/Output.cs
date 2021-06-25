@@ -25,7 +25,7 @@ namespace ImportTransformer.Controller
         {
             var tasks = new List<Task>();
 
-            var counter = (codes.Count() / 30000) + 1;
+            var counter = codes.Count() / 30000 + 1;
             //до 30_000 в одном файле
 
             for (var i = 0; i < counter; i++)
@@ -134,7 +134,7 @@ namespace ImportTransformer.Controller
                 d.Create();
 
             //до 10_000 в одном файле
-            var counter = (data.Count() / 10000) + 1;
+            var counter = data.Count() / 10000 + 1;
 
             var tasks = new List<Task>();
 
@@ -192,7 +192,7 @@ namespace ImportTransformer.Controller
         {
             //до 25_000 в одном файле
 
-            var counter = (data.Count() / 25000) + 1;
+            var counter = data.Count() / 25000 + 1;
 
             var doc = new Documents
             {
@@ -240,7 +240,7 @@ namespace ImportTransformer.Controller
         {
             //до 25_000 в одном файле
 
-            var counter = (data.Count() / 25000) + 1;
+            var counter = data.Count() / 25000 + 1;
 
             var doc = new Documents
             {
