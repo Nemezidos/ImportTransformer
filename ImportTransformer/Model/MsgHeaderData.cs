@@ -18,11 +18,6 @@
             this.HubCustomReceiverId = hubCustomReceiverId;
         }
 
-        public MsgHeaderData()
-        {
-
-        }
-
         public string SellerId { get; set; }
         public string SubjectId { get; set; }
         public string PackingId { get; set; }

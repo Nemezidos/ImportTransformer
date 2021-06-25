@@ -49,7 +49,7 @@ namespace ImportTransformer.Controller
             name = name.Remove(name.Length - 4);
             var dir = fi.DirectoryName;
 
-            var arr = doc.Multi_pack.By_sgtin.Detail
+            var arr = doc.MultiPack.BySgtin.Detail
                 .OrderByDescending(s => s.Content.Sgtin.Count())
                 .ToList()
                 .SplitContentOfMultiPack(parts);
@@ -63,12 +63,12 @@ namespace ImportTransformer.Controller
                 var splittedDoc = new Documents
                 {
                     Version = "1.36",
-                    Multi_pack = new Multi_pack
+                    MultiPack = new MultiPack
                     {
-                        Action_id = "915",
-                        Operation_date = doc.Multi_pack.Operation_date,
-                        Subject_id = doc.Multi_pack.Subject_id,
-                        By_sgtin = new By_sgtin 
+                        ActionId = "915",
+                        OperationDate = doc.MultiPack.OperationDate,
+                        SubjectId = doc.MultiPack.SubjectId,
+                        BySgtin = new BySgtin 
                         { 
                             Detail = arr[i]
                         }

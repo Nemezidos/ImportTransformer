@@ -13,7 +13,7 @@ namespace ImportTransformer.Controller
     {
         private const int SsccLenght = 13;
         
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static Logger _logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Создаёт утилизейшон репорты
@@ -39,7 +39,7 @@ namespace ImportTransformer.Controller
 
             Task.WaitAll(tasks.ToArray());
 
-           logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
+           _logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
         private static void CreateSingleUtil(IEnumerable<CryptoCode> cryptoCodes, string path)
@@ -54,7 +54,7 @@ namespace ImportTransformer.Controller
                 }
             }
 
-            logger.Info($"Создан отчёт о нанесении: {path}");
+            _logger.Info($"Создан отчёт о нанесении: {path}");
         }
 
         public static void CreateMultiPackMessages(this List<SantensReport> data, string gtin, MsgHeaderData headerData, string path, DateTime timestamp)
@@ -62,18 +62,18 @@ namespace ImportTransformer.Controller
             var doc = new Documents
             {
                 Version = "1.36",
-                Multi_pack = new Multi_pack
+                MultiPack = new MultiPack
                 {
-                    Action_id = "915",
-                    Subject_id = headerData.HubSubjectId,
-                    Operation_date = $"{timestamp:yyyy-MM-ddTHH:mm:ss}+03:00"
+                    ActionId = "915",
+                    SubjectId = headerData.HubSubjectId,
+                    OperationDate = $"{timestamp:yyyy-MM-ddTHH:mm:ss}+03:00"
                 }
             };
             string marker;
 
             if (data.First().Content.First().Length > SsccLenght)
             {
-                doc.Multi_pack.By_sscc = new By_sscc
+                doc.MultiPack.BySscc = new BySscc
                 {
                     Detail = data.Select(fragment => new Detail
                     {
@@ -89,7 +89,7 @@ namespace ImportTransformer.Controller
             }
             else
             {
-                doc.Multi_pack.By_sgtin = new By_sgtin
+                doc.MultiPack.BySgtin = new BySgtin
                 {
                     Detail = data.Select(fragment => new Detail
                         {
@@ -114,13 +114,13 @@ namespace ImportTransformer.Controller
             var doc = new Documents
             {
                 Version = "1.36",
-                Session_ui = "4Aa246a6-D7e2-2465-a056-0234554369a3",
-                Transfer_code_to_custom = new Transfer_code_to_custom 
+                SessionUi = "4Aa246a6-D7e2-2465-a056-0234554369a3",
+                TransferCodeToCustom = new TransferCodeToCustom 
                 {
-                    Action_id = "300",
-                    Operation_date = $"{timestamp:yyyy-MM-ddTHH:mm:ss}+03:00",
-                    Subject_id = headerData.SubjectId,
-                    Custom_receiver_id = headerData.CustomReceiverId,
+                    ActionId = "300",
+                    OperationDate = $"{timestamp:yyyy-MM-ddTHH:mm:ss}+03:00",
+                    SubjectId = headerData.SubjectId,
+                    CustomReceiverId = headerData.CustomReceiverId,
                     Gtin = data.FirstOrDefault().Gtin,
                     Signs = new Signs
                     {
@@ -141,10 +141,10 @@ namespace ImportTransformer.Controller
             for (var i = 0; i < counter; i++)
             {
                 var temp = data.Skip(i * 10000).Take(10000);
-                doc.Transfer_code_to_custom.Signs.Sgtin.Clear();
+                doc.TransferCodeToCustom.Signs.Sgtin.Clear();
                 foreach (var e in temp)
                 {
-                    doc.Transfer_code_to_custom.Signs.Sgtin.Add($"{e.Gtin}{e.Sn}");
+                    doc.TransferCodeToCustom.Signs.Sgtin.Add($"{e.Gtin}{e.Sn}");
                 }
                 var newPath = @$"{path}\forUpload\300-TransferCodeToCustom_{timestamp:yyyyMMddHHmmss}_{i + 1}.xml";
 
@@ -153,7 +153,7 @@ namespace ImportTransformer.Controller
 
             Task.WaitAll(tasks.ToArray());
 
-            logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
+            _logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
         public static void CreateForeignEmissionMessages(this IEnumerable<CryptoCode> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
@@ -161,15 +161,15 @@ namespace ImportTransformer.Controller
             var doc = new Documents
             {
                 Version = "1.35",
-                Foreign_emission = new Foreign_emission 
+                ForeignEmission = new ForeignEmission 
                 {
-                    Action_id = "321",
-                    Subject_id = headerData.HubSubjectId,
-                    Packing_id = headerData.HubSubjectId,
-                    Control_id = headerData.HubSubjectId,
-                    Operation_date = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
-                    Series_number = support.Batch,
-                    Expiration_date = support.ExpirationDate.ToString("dd.MM.yyyy"),
+                    ActionId = "321",
+                    SubjectId = headerData.HubSubjectId,
+                    PackingId = headerData.HubSubjectId,
+                    ControlId = headerData.HubSubjectId,
+                    OperationDate = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
+                    SeriesNumber = support.Batch,
+                    ExpirationDate = support.ExpirationDate.ToString("dd.MM.yyyy"),
                     Gtin = support.Gtin,
                     Signs = new Signs 
                     { 
@@ -180,7 +180,7 @@ namespace ImportTransformer.Controller
 
             foreach (var e in data)
             {
-                doc.Foreign_emission.Signs.Sgtin.Add(support.Gtin + e.Sn);
+                doc.ForeignEmission.Signs.Sgtin.Add(support.Gtin + e.Sn);
             }
 
             var newPath = path + @$"\forUpload\321-st_format_{timestamp:yyyyMMddHHmmss}_{support.Batch}.xml";
@@ -197,18 +197,18 @@ namespace ImportTransformer.Controller
             var doc = new Documents
             {
                 Version = "1.36",
-                Foreign_shipment = new Foreign_shipment 
+                ForeignShipment = new ForeignShipment 
                 {
-                    Action_id = "331",
-                    Subject_id = headerData.HubSubjectId,
-                    Seller_id = headerData.HubSellerId,
-                    Receiver_id = headerData.HubReceiverId,
-                    Custom_receiver_id = headerData.HubCustomReceiverId,
-                    Operation_date = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
-                    Contract_type = "1",
-                    Doc_num = support.DocNum,
-                    Doc_date = support.DocDate.ToString("dd.MM.yyyy"),
-                    Order_details = new Order_details 
+                    ActionId = "331",
+                    SubjectId = headerData.HubSubjectId,
+                    SellerId = headerData.HubSellerId,
+                    ReceiverId = headerData.HubReceiverId,
+                    CustomReceiverId = headerData.HubCustomReceiverId,
+                    OperationDate = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
+                    ContractType = "1",
+                    DocNum = support.DocNum,
+                    DocDate = support.DocDate.ToString("dd.MM.yyyy"),
+                    OrderDetails = new OrderDetails 
                     { 
                         Sscc = new List<string>() 
                     }
@@ -220,10 +220,10 @@ namespace ImportTransformer.Controller
             for (var i = 0; i < counter; i++)
             {
                 var temp = data.Skip(i * 25000).Take(25000);
-                doc.Foreign_shipment.Order_details.Sscc.Clear();
+                doc.ForeignShipment.OrderDetails.Sscc.Clear();
                 foreach (var e in temp)
                 {
-                    doc.Foreign_shipment.Order_details.Sscc.Add(e.ParentContainer);
+                    doc.ForeignShipment.OrderDetails.Sscc.Add(e.ParentContainer);
                 }
 
                 var newPath = $@"{path}\forUpload\331-st_format_{timestamp:yyyyMMddHHmmss}_{support.DocNum}_{i + 1}.xml";
@@ -233,7 +233,7 @@ namespace ImportTransformer.Controller
 
             Task.WaitAll(tasks.ToArray());
 
-            logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
+            _logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
         public static void CreateImportInfoMessages(this IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
@@ -245,18 +245,18 @@ namespace ImportTransformer.Controller
             var doc = new Documents
             {
                 Version = "1.36",
-                Session_ui = "4Aa246a6-D7e2-2465-a056-0234554369a3",
-                Import_info = new Import_info 
+                SessionUi = "4Aa246a6-D7e2-2465-a056-0234554369a3",
+                ImportInfo = new ImportInfo 
                 {
-                    Action_id = "336",
-                    Subject_id = headerData.SubjectId,
-                    Seller_id = headerData.SellerId,
-                    Receiver_id = headerData.ReceiverId,
-                    Operation_date = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
-                    Contract_type = "1",
-                    Doc_num = support.DocNum,
-                    Doc_date = support.DocDate.ToString("dd.MM.yyyy"),
-                    Order_details = new Order_details
+                    ActionId = "336",
+                    SubjectId = headerData.SubjectId,
+                    SellerId = headerData.SellerId,
+                    ReceiverId = headerData.ReceiverId,
+                    OperationDate = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
+                    ContractType = "1",
+                    DocNum = support.DocNum,
+                    DocDate = support.DocDate.ToString("dd.MM.yyyy"),
+                    OrderDetails = new OrderDetails
                     {
                         Sscc = new List<string>()
                     }
@@ -268,10 +268,10 @@ namespace ImportTransformer.Controller
             for (var i = 0; i < counter; i++)
             {
                 var temp = data.Skip(i * 25000).Take(25000);
-                doc.Import_info.Order_details.Sscc.Clear();
+                doc.ImportInfo.OrderDetails.Sscc.Clear();
                 foreach (var e in temp)
                 {
-                    doc.Import_info.Order_details.Sscc.Add(e.ParentContainer);
+                    doc.ImportInfo.OrderDetails.Sscc.Add(e.ParentContainer);
                 }
 
                 var newPath = $@"{path}\forUpload\336-st_format_{timestamp:yyyyMMddHHmmss}_{support.DocNum}_{i + 1}.xml";
@@ -281,17 +281,17 @@ namespace ImportTransformer.Controller
 
             Task.WaitAll(tasks.ToArray());
 
-            logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
+            _logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
         public static void LogTimer(string text)
         {
-            logger.Info(text);
+            _logger.Info(text);
         }
 
         public static void ErrorLog(Exception st)
         {
-            logger.Error(st, $"Возникла ошибка: \n--{st.Message} \n\n{st.StackTrace}");
+            _logger.Error(st, $"Возникла ошибка: \n--{st.Message} \n\n{st.StackTrace}");
 
         }
     }

@@ -8,21 +8,21 @@ namespace ImportTransformer.Model
 	public class Documents
 	{
 		[XmlElement(ElementName = "skzkm_foreign_emission")]
-		public Skzkm_foreign_emission Skzkm_foreign_emission { get; set; }
+		public SkzkmForeignEmission SkzkmForeignEmission { get; set; }
 		[XmlAttribute(AttributeName = "session_ui")]
-		public string Session_ui { get; set; }
+		public string SessionUi { get; set; }
 		[XmlAttribute(AttributeName = "version")]
 		public string Version { get; set; }
 		[XmlElement(ElementName = "foreign_emission")]
-		public Foreign_emission Foreign_emission { get; set; }
+		public ForeignEmission ForeignEmission { get; set; }
 		[XmlElement(ElementName = "foreign_shipment")]
-		public Foreign_shipment Foreign_shipment { get; set; }
+		public ForeignShipment ForeignShipment { get; set; }
 		[XmlElement(ElementName = "import_info")]
-		public Import_info Import_info { get; set; }
+		public ImportInfo ImportInfo { get; set; }
 		[XmlElement(ElementName = "multi_pack")]
-		public Multi_pack Multi_pack { get; set; }
+		public MultiPack MultiPack { get; set; }
 		[XmlElement(ElementName = "transfer_code_to_custom")]
-		public Transfer_code_to_custom Transfer_code_to_custom { get; set; }
+		public TransferCodeToCustom TransferCodeToCustom { get; set; }
 		//[XmlAttribute(AttributeName = "xsi", Namespace = "http://www.w3.org/2000/xmlns/")]
 		//public string Xsi { get; set; }
 	}
@@ -35,56 +35,56 @@ namespace ImportTransformer.Model
 	}
 
 	[XmlRoot(ElementName = "transfer_code_to_custom")]
-	public class Transfer_code_to_custom
+	public class TransferCodeToCustom
 	{
 		[XmlElement(ElementName = "subject_id")]
-		public string Subject_id { get; set; }
+		public string SubjectId { get; set; }
 		[XmlElement(ElementName = "operation_date")]
-		public string Operation_date { get; set; }
+		public string OperationDate { get; set; }
 		[XmlElement(ElementName = "custom_receiver_id")]
-		public string Custom_receiver_id { get; set; }
+		public string CustomReceiverId { get; set; }
 		[XmlElement(ElementName = "gtin")]
 		public string Gtin { get; set; }
 		[XmlElement(ElementName = "signs")]
 		public Signs Signs { get; set; }
 		[XmlAttribute(AttributeName = "action_id")]
-		public string Action_id { get; set; }
+		public string ActionId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "device_info")]
-	public class Device_info
+	public class DeviceInfo
 	{
 		[XmlElement(ElementName = "device_id")]
-		public string Device_id { get; set; }
+		public string DeviceId { get; set; }
 		[XmlElement(ElementName = "skzkm_origin_msg_id")]
-		public string Skzkm_origin_msg_id { get; set; }
+		public string SkzkmOriginMsgId { get; set; }
 		[XmlElement(ElementName = "skzkm_report_id")]
-		public string Skzkm_report_id { get; set; }
+		public string SkzkmReportId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "skzkm_foreign_emission")]
-	public class Skzkm_foreign_emission
+	public class SkzkmForeignEmission
 	{
 		[XmlElement(ElementName = "subject_id")]
-		public string Subject_id { get; set; }
+		public string SubjectId { get; set; }
 		[XmlElement(ElementName = "operation_date")]
-		public string Operation_date { get; set; }
+		public string OperationDate { get; set; }
 		[XmlElement(ElementName = "packing_id")]
-		public string Packing_id { get; set; }
+		public string PackingId { get; set; }
 		[XmlElement(ElementName = "control_id")]
-		public string Control_id { get; set; }
+		public string ControlId { get; set; }
 		[XmlElement(ElementName = "series_number")]
-		public string Series_number { get; set; }
+		public string SeriesNumber { get; set; }
 		[XmlElement(ElementName = "expiration_date")]
-		public string Expiration_date { get; set; }
+		public string ExpirationDate { get; set; }
 		[XmlElement(ElementName = "gtin")]
 		public string Gtin { get; set; }
 		[XmlElement(ElementName = "signs")]
 		public Signs Signs { get; set; }
 		[XmlElement(ElementName = "device_info")]
-		public Device_info Device_info { get; set; }
+		public DeviceInfo DeviceInfo { get; set; }
 		[XmlAttribute(AttributeName = "action_id")]
-		public string Action_id { get; set; }
+		public string ActionId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "content")]
@@ -106,36 +106,36 @@ namespace ImportTransformer.Model
 	}
 
 	[XmlRoot(ElementName = "by_sscc")]
-	public class By_sscc
+	public class BySscc
 	{
 		[XmlElement(ElementName = "detail")]
 		public List<Detail> Detail { get; set; }
 	}
 
 	[XmlRoot(ElementName = "by_sgtin")]
-	public class By_sgtin
+	public class BySgtin
 	{
 		[XmlElement(ElementName = "detail")]
 		public List<Detail> Detail { get; set; }
 	}
 
 	[XmlRoot(ElementName = "multi_pack")]
-	public class Multi_pack
+	public class MultiPack
 	{
 		[XmlElement(ElementName = "subject_id")]
-		public string Subject_id { get; set; }
+		public string SubjectId { get; set; }
 		[XmlElement(ElementName = "operation_date")]
-		public string Operation_date { get; set; }
+		public string OperationDate { get; set; }
 		[XmlElement(ElementName = "by_sscc")]
-		public By_sscc By_sscc { get; set; }
+		public BySscc BySscc { get; set; }
 		[XmlElement(ElementName = "by_sgtin")]
-		public By_sgtin By_sgtin { get; set; }
+		public BySgtin BySgtin { get; set; }
 		[XmlAttribute(AttributeName = "action_id")]
-		public string Action_id { get; set; }
+		public string ActionId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "order_details")]
-	public class Order_details
+	public class OrderDetails
 	{
 		[XmlElement(ElementName = "sgtin")]
 		public List<string> Sgtin { get; set; }
@@ -144,73 +144,73 @@ namespace ImportTransformer.Model
 	}
 
 	[XmlRoot(ElementName = "import_info")]
-	public class Import_info
+	public class ImportInfo
 	{
 		[XmlElement(ElementName = "subject_id")]
-		public string Subject_id { get; set; }
+		public string SubjectId { get; set; }
 		[XmlElement(ElementName = "seller_id")]
-		public string Seller_id { get; set; }
+		public string SellerId { get; set; }
 		[XmlElement(ElementName = "receiver_id")]
-		public string Receiver_id { get; set; }
+		public string ReceiverId { get; set; }
 		[XmlElement(ElementName = "operation_date")]
-		public string Operation_date { get; set; }
+		public string OperationDate { get; set; }
 		[XmlElement(ElementName = "contract_type")]
-		public string Contract_type { get; set; }
+		public string ContractType { get; set; }
 		[XmlElement(ElementName = "doc_num")]
-		public string Doc_num { get; set; }
+		public string DocNum { get; set; }
 		[XmlElement(ElementName = "doc_date")]
-		public string Doc_date { get; set; }
+		public string DocDate { get; set; }
 		[XmlElement(ElementName = "order_details")]
-		public Order_details Order_details { get; set; }
+		public OrderDetails OrderDetails { get; set; }
 		[XmlAttribute(AttributeName = "action_id")]
-		public string Action_id { get; set; }
+		public string ActionId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "foreign_shipment")]
-	public class Foreign_shipment
+	public class ForeignShipment
 	{
 		[XmlElement(ElementName = "subject_id")]
-		public string Subject_id { get; set; }
+		public string SubjectId { get; set; }
 		[XmlElement(ElementName = "seller_id")]
-		public string Seller_id { get; set; }
+		public string SellerId { get; set; }
 		[XmlElement(ElementName = "receiver_id")]
-		public string Receiver_id { get; set; }
+		public string ReceiverId { get; set; }
 		[XmlElement(ElementName = "custom_receiver_id")]
-		public string Custom_receiver_id { get; set; }
+		public string CustomReceiverId { get; set; }
 		[XmlElement(ElementName = "operation_date")]
-		public string Operation_date { get; set; }
+		public string OperationDate { get; set; }
 		[XmlElement(ElementName = "contract_type")]
-		public string Contract_type { get; set; }
+		public string ContractType { get; set; }
 		[XmlElement(ElementName = "doc_num")]
-		public string Doc_num { get; set; }
+		public string DocNum { get; set; }
 		[XmlElement(ElementName = "doc_date")]
-		public string Doc_date { get; set; }
+		public string DocDate { get; set; }
 		[XmlElement(ElementName = "order_details")]
-		public Order_details Order_details { get; set; }
+		public OrderDetails OrderDetails { get; set; }
 		[XmlAttribute(AttributeName = "action_id")]
-		public string Action_id { get; set; }
+		public string ActionId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "foreign_emission")]
-	public class Foreign_emission
+	public class ForeignEmission
 	{
 		[XmlElement(ElementName = "subject_id")]
-		public string Subject_id { get; set; }
+		public string SubjectId { get; set; }
 		[XmlElement(ElementName = "operation_date")]
-		public string Operation_date { get; set; }
+		public string OperationDate { get; set; }
 		[XmlElement(ElementName = "packing_id")]
-		public string Packing_id { get; set; }
+		public string PackingId { get; set; }
 		[XmlElement(ElementName = "control_id")]
-		public string Control_id { get; set; }
+		public string ControlId { get; set; }
 		[XmlElement(ElementName = "series_number")]
-		public string Series_number { get; set; }
+		public string SeriesNumber { get; set; }
 		[XmlElement(ElementName = "expiration_date")]
-		public string Expiration_date { get; set; }
+		public string ExpirationDate { get; set; }
 		[XmlElement(ElementName = "gtin")]
 		public string Gtin { get; set; }
 		[XmlElement(ElementName = "signs")]
 		public Signs Signs { get; set; }
 		[XmlAttribute(AttributeName = "action_id")]
-		public string Action_id { get; set; }
+		public string ActionId { get; set; }
 	}
 }

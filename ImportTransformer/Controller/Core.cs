@@ -11,53 +11,53 @@ using System.Xml.Serialization;
 
 namespace ImportTransformer.Controller
 {
-    public class Core
+    public static class Core
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-        public static void DoMessages(FilePaths pathes, PartsNeeded needs)
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        public static void DoMessages(FilePaths paths, PartsNeeded needs)
         {
             var sw = new Stopwatch();
             sw.Start();
 
-            pathes.Results = Directory.GetCurrentDirectory();
+            paths.Results = Directory.GetCurrentDirectory();
 
             var timestamp = DateTime.Now;
 
-            var ssccReport = pathes.Santens.InputReport(0);
-            var sgtinReport = pathes.Santens.InputReport(1);
+            var ssccReport = paths.Santens.InputReport(0);
+            var sgtinReport = paths.Santens.InputReport(1);
 
-            var codes = Input.InputCsv(pathes.Tracelink);
+            var codes = paths.Tracelink.InputCsv();
             var filteredCodes = codes.Filter(sgtinReport);
 
             var serializer = new XmlSerializer(typeof(MsgHeaderData));
 
-            using Stream reader = new FileStream(pathes.Headers, FileMode.Open);
+            using Stream reader = new FileStream(paths.Headers, FileMode.Open);
             var header = (MsgHeaderData)serializer.Deserialize(reader);
 
-            var supportData = Input.InputSupport(pathes.Support);
+            var supportData = paths.Support.InputSupport();
 
             if (needs.FirstPart)
             {
-                filteredCodes.CreateUtilisationReport(pathes.Results, timestamp);
-                filteredCodes.CreateTransferCodeToCustomMessages(header, pathes.Results, timestamp);
-                filteredCodes.CreateForeignEmissionMessages(header, supportData, pathes.Results, timestamp);
+                filteredCodes.CreateUtilisationReport(paths.Results, timestamp);
+                filteredCodes.CreateTransferCodeToCustomMessages(header, paths.Results, timestamp);
+                filteredCodes.CreateForeignEmissionMessages(header, supportData, paths.Results, timestamp);
             }
 
             if (needs.SecondPart)
             {
-                sgtinReport.ToList().CreateMultiPackMessages(supportData.Gtin, header, pathes.Results, timestamp.AddMinutes(10));
-                ssccReport.ToList().CreateMultiPackMessages(supportData.Gtin, header, pathes.Results, timestamp.AddMinutes(20));
+                sgtinReport.ToList().CreateMultiPackMessages(supportData.Gtin, header, paths.Results, timestamp.AddMinutes(10));
+                ssccReport.ToList().CreateMultiPackMessages(supportData.Gtin, header, paths.Results, timestamp.AddMinutes(20));
 
-                ssccReport.CreateForeignShipmentMessages(header, supportData, pathes.Results, timestamp.AddHours(1));
-                ssccReport.CreateImportInfoMessages(header, supportData, pathes.Results, timestamp.AddHours(2));
+                ssccReport.CreateForeignShipmentMessages(header, supportData, paths.Results, timestamp.AddHours(1));
+                ssccReport.CreateImportInfoMessages(header, supportData, paths.Results, timestamp.AddHours(2));
 
-                if (new DirectoryInfo(@$"{pathes.Results}\forUpload").Exists)
-                    Transformator.SplitAllMultiPackInDir(@$"{pathes.Results}\forUpload");
+                if (new DirectoryInfo(@$"{paths.Results}\forUpload").Exists)
+                    Transformator.SplitAllMultiPackInDir(@$"{paths.Results}\forUpload");
             }
 
             sw.Stop();
 
-            logger.Info(
+            Logger.Info(
                 $"Скрипт исполнен за {Convert.ToString(sw.Elapsed.TotalMilliseconds, CultureInfo.InvariantCulture)} миллисекунд(ы)");
         }
 
@@ -93,7 +93,7 @@ namespace ImportTransformer.Controller
                 var a = XmlWriter.Create(writer, settings);
                 serializer.Serialize(a, tempHeaders);
 
-                logger.Info("Создан новый файл заголовков");
+                Logger.Info("Создан новый файл заголовков");
             }
         }
     }
