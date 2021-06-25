@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,20 +16,20 @@ namespace ImportTransformer.Controller
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public static void DoMessages(FilePaths pathes, PartsNeeded needs)
         {
-            Stopwatch SW = new Stopwatch();
-            SW.Start();
+            var sw = new Stopwatch();
+            sw.Start();
 
             pathes.Results = Directory.GetCurrentDirectory();
 
-            DateTime timestamp = DateTime.Now;
+            var timestamp = DateTime.Now;
 
-            var ssccReport = Input.InputReport(pathes.Santens, 0);
-            var sgtinReport = Input.InputReport(pathes.Santens, 1);
+            var ssccReport = pathes.Santens.InputReport(0);
+            var sgtinReport = pathes.Santens.InputReport(1);
 
             var codes = Input.InputCsv(pathes.Tracelink);
-            var filteredCodes = Transformator.Filter(codes, sgtinReport);
+            var filteredCodes = codes.Filter(sgtinReport);
 
-            XmlSerializer serializer = new XmlSerializer(typeof(MsgHeaderData));
+            var serializer = new XmlSerializer(typeof(MsgHeaderData));
 
             using Stream reader = new FileStream(pathes.Headers, FileMode.Open);
             var header = (MsgHeaderData)serializer.Deserialize(reader);
@@ -37,36 +38,34 @@ namespace ImportTransformer.Controller
 
             if (needs.FirstPart)
             {
-                Output.CreateUtilisationReport(filteredCodes, pathes.Results, timestamp);
-                Output.CreateTransferCodeToCustomMessages(filteredCodes, header, pathes.Results, timestamp);
-                Output.CreateForeignEmissionMessages(filteredCodes, header, supportData, pathes.Results, timestamp);
+                filteredCodes.CreateUtilisationReport(pathes.Results, timestamp);
+                filteredCodes.CreateTransferCodeToCustomMessages(header, pathes.Results, timestamp);
+                filteredCodes.CreateForeignEmissionMessages(header, supportData, pathes.Results, timestamp);
             }
 
             if (needs.SecondPart)
             {
-                Output.CreateMultiPackMessages(sgtinReport.ToList(), supportData.Gtin, header, pathes.Results, timestamp.AddMinutes(10));
-                Output.CreateMultiPackMessages(ssccReport.ToList(), supportData.Gtin, header, pathes.Results, timestamp.AddMinutes(20));
+                sgtinReport.ToList().CreateMultiPackMessages(supportData.Gtin, header, pathes.Results, timestamp.AddMinutes(10));
+                ssccReport.ToList().CreateMultiPackMessages(supportData.Gtin, header, pathes.Results, timestamp.AddMinutes(20));
 
-                Output.CreateForeignShipmentMessages(ssccReport, header, supportData, pathes.Results, timestamp.AddHours(1));
-                Output.CreateImportInfoMessages(ssccReport, header, supportData, pathes.Results, timestamp.AddHours(2));
+                ssccReport.CreateForeignShipmentMessages(header, supportData, pathes.Results, timestamp.AddHours(1));
+                ssccReport.CreateImportInfoMessages(header, supportData, pathes.Results, timestamp.AddHours(2));
 
                 if (new DirectoryInfo(@$"{pathes.Results}\forUpload").Exists)
                     Transformator.SplitAllMultiPackInDir(@$"{pathes.Results}\forUpload");
             }
 
-            SW.Stop();
+            sw.Stop();
 
-            Output.LogTimer($"Скрипт исполнен за {Convert.ToString(SW.Elapsed.TotalMilliseconds)} миллисекунд(ы)");
+            logger.Info(
+                $"Скрипт исполнен за {Convert.ToString(sw.Elapsed.TotalMilliseconds, CultureInfo.InvariantCulture)} миллисекунд(ы)");
         }
 
         public static string ExistHeaders()
         {
-            CreateHeader(false, out string path);
+            CreateHeader(false, out var path);
 
-            if (File.Exists(path))
-                return path;
-            else
-                return string.Empty;
+            return File.Exists(path) ? path : string.Empty;
         }
 
         public static void CreateHeader(bool isNew, out string path)
@@ -81,9 +80,9 @@ namespace ImportTransformer.Controller
             {
                 var tempHeaders = new MsgHeaderData("seller", "subject", "packing", "control", "receiver", "customreceiver", "hubsubject", "hubseller", "hubreceiver", "hubcustomreceiver");
 
-                XmlSerializer serializer = new XmlSerializer(typeof(MsgHeaderData));
+                var serializer = new XmlSerializer(typeof(MsgHeaderData));
 
-                XmlWriterSettings settings = new XmlWriterSettings() { 
+                var settings = new XmlWriterSettings() { 
                     OmitXmlDeclaration = false, 
                     Indent = true, 
                     Encoding = new UTF8Encoding(false) 

@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
+using NLog;
 
 namespace ImportTransformer
 {
@@ -14,6 +15,7 @@ namespace ImportTransformer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static Logger _logger = LogManager.GetCurrentClassLogger();
         public MainWindow()
         {
             InitializeComponent();
@@ -29,7 +31,7 @@ namespace ImportTransformer
             {
 
             }
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".xml",
@@ -37,14 +39,14 @@ namespace ImportTransformer
             };
             if (openFileDialog.ShowDialog() == true)
             {
-                FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
+                var fileInfo = new FileInfo(openFileDialog.FileName);
                 PathToHeaderFile.Text = (fileInfo.FullName);
             }
         }
 
         private void GetSantensFile(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".xlsx",
@@ -52,14 +54,14 @@ namespace ImportTransformer
             };
             if (openFileDialog.ShowDialog() == true)
             {
-                FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
+                var fileInfo = new FileInfo(openFileDialog.FileName);
                 PathToSantensFile.Text = (fileInfo.FullName);
             }
         }
 
         private void GetTracelinkFile(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".csv",
@@ -67,14 +69,14 @@ namespace ImportTransformer
             };
             if (openFileDialog.ShowDialog() == true)
             {
-                FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
+                var fileInfo = new FileInfo(openFileDialog.FileName);
                 PathToTracelinkFile.Text = (fileInfo.FullName);
             }
         }
 
         private void GetSupportFile(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 InitialDirectory = Directory.GetCurrentDirectory(),// Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 DefaultExt = ".xlsx",
@@ -82,14 +84,14 @@ namespace ImportTransformer
             };
             if (openFileDialog.ShowDialog() == true)
             {
-                FileInfo fileInfo = new FileInfo(openFileDialog.FileName);
+                var fileInfo = new FileInfo(openFileDialog.FileName);
                 PathToSupportFile.Text = (fileInfo.FullName);
             }
         }
 
         private void CreateHeaderFile(object sender, RoutedEventArgs e)
         {
-            Core.CreateHeader(true, out string _);
+            Core.CreateHeader(true, out var _);
         }
 
         #endregion
@@ -97,17 +99,17 @@ namespace ImportTransformer
         private void ShowInstruction(object sender, RoutedEventArgs e)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ImportTransformer.Instruction.txt";
+            const string resourceName = "ImportTransformer.Instruction.txt";
 
-            using Stream stream = assembly.GetManifestResourceStream(resourceName);
-            using StreamReader reader = new StreamReader(stream);
-            string result = reader.ReadToEnd();
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var reader = new StreamReader(stream);
+            var result = reader.ReadToEnd();
             MessageBox.Show(result, "Instruction", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private bool InputCheck(out FilePaths outPaths)
         {
-            bool result = true;
+            var result = true;
             outPaths = new FilePaths();
 
             var temp = PathToHeaderFile.Text.Trim(' ', '"');
@@ -152,21 +154,21 @@ namespace ImportTransformer
         private void MakeMessages(object sender, RoutedEventArgs e)
         {
             var needs = new PartsNeeded { 
-                FirstPart = FirstPart.IsChecked.Value, 
-                SecondPart = SecondPart.IsChecked.Value 
+                FirstPart = FirstPart.IsChecked != null && FirstPart.IsChecked.Value, 
+                SecondPart = SecondPart.IsChecked != null && SecondPart.IsChecked.Value 
             };
 
             try
             {
-                if (InputCheck(out FilePaths pathes))
-                    Core.DoMessages(pathes, needs);
+                if (InputCheck(out var paths))
+                    Core.DoMessages(paths, needs);
                 else
                     MessageBox.Show("Заполнено не всё!\nДальнейшая работа невозможна.");
             }
             catch (Exception ex)
             {
-                Output.ErrorLog(ex);
-                MessageBox.Show(ex.ToString(),
+                _logger.Error(ex, $"Возникла ошибка: {ex.Message} \n{ex.StackTrace}");
+                MessageBox.Show(ex.Message,
                                 "Exception",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);

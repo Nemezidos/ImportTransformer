@@ -7,39 +7,33 @@ using System.Xml.Serialization;
 
 namespace ImportTransformer.Controller
 {
-    class Serializer
+    public static class Serializer
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        public static Documents DeSerializer(string file)
+        public static Documents DeSerializer(this string file)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(Documents));
+            var serializer = new XmlSerializer(typeof(Documents));
 
-            Documents doc;
+            using Stream reader = new FileStream(file, FileMode.Open);
+            var doc = (Documents)serializer.Deserialize(reader);
 
-            using (Stream reader = new FileStream(file, FileMode.Open))
-            {
-                doc = (Documents)serializer.Deserialize(reader);
-            }
-
-            logger.Info($"Принят файл {file}");
+            Logger.Info($"Принят файл {file}");
 
             return doc;
         }
 
-        public static void SerializerXml(string path, Documents doc)
+        public static void SerializerXml(this Documents doc, string path)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(Documents));
+            var serializer = new XmlSerializer(typeof(Documents));
 
-            XmlWriterSettings settings = new XmlWriterSettings() { OmitXmlDeclaration = false, Indent = true, Encoding = new UTF8Encoding(false) };
+            var settings = new XmlWriterSettings() { OmitXmlDeclaration = false, Indent = true, Encoding = new UTF8Encoding(false) };
 
-            using (Stream writer = new FileStream(path, FileMode.OpenOrCreate))
-            using (var wr = XmlWriter.Create(writer, settings))
-            {
-                var a = XmlWriter.Create(writer, settings);
-                serializer.Serialize(a, doc);
-            }
-            logger.Info($"Создан файл {path}");
+            using Stream writer = new FileStream(path, FileMode.OpenOrCreate);
+            using var wr = XmlWriter.Create(writer, settings);
+            serializer.Serialize(wr, doc);
+
+            Logger.Info($"Создан файл {path}");
         }
     }
 }

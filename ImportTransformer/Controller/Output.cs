@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace ImportTransformer.Controller
 {
-    class Output
+    static class Output
     {
+        private const int SsccLenght = 13;
+        
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
@@ -18,18 +20,19 @@ namespace ImportTransformer.Controller
         /// </summary>
         /// <param name="codes"></param>
         /// <param name="path"></param>
-        public static void CreateUtilisationReport(IEnumerable<CryptoCode> codes, string path, DateTime timestamp)
+        /// <param name="timestamp"></param>
+        public static void CreateUtilisationReport(this IEnumerable<CryptoCode> codes, string path, DateTime timestamp)
         {
             var tasks = new List<Task>();
 
-            int counter = (codes.Count() / 30000) + 1;
+            var counter = (codes.Count() / 30000) + 1;
             //до 30_000 в одном файле
 
-            for (int i = 0; i < counter; i++)
+            for (var i = 0; i < counter; i++)
             {
                 var temp = codes.Skip(i * 30000).Take(30000);
 
-                string newPath = @$"{path}\forUpload\UtilReport_{timestamp:yyyyMMddHHmmss}_{i + 1}.csv";
+                var newPath = @$"{path}\forUpload\UtilReport_{timestamp:yyyyMMddHHmmss}_{i + 1}.csv";
 
                 tasks.Add(Task.Run(() => CreateSingleUtil(temp, newPath)));
             }
@@ -41,50 +44,46 @@ namespace ImportTransformer.Controller
 
         private static void CreateSingleUtil(IEnumerable<CryptoCode> cryptoCodes, string path)
         {
-            string GS = Encoding.ASCII.GetString(new byte[] { 29 });
+            const char gs = (char) 29; //Encoding.ASCII.GetString(new byte[] { 29 });
 
-            using (StreamWriter sw = new StreamWriter(path, false, new UTF8Encoding(false)))
+            using (var sw = new StreamWriter(path, false, new UTF8Encoding(false)))
             {
                 foreach (var e in cryptoCodes)
                 {
-                    sw.WriteLine($"01{e.Gtin}21{e.Sn}{GS}91{e.Prefix}{GS}92{e.CryptoKeyCode}");
+                    sw.WriteLine($"01{e.Gtin}21{e.Sn}{gs}91{e.Prefix}{gs}92{e.CryptoKeyCode}");
                 }
             }
 
             logger.Info($"Создан отчёт о нанесении: {path}");
         }
 
-        public static void CreateMultiPackMessages(List<SantensReport> data, string gtin, MsgHeaderData headerData, string path, DateTime timestamp)
+        public static void CreateMultiPackMessages(this List<SantensReport> data, string gtin, MsgHeaderData headerData, string path, DateTime timestamp)
         {
-            Documents doc = new Documents
+            var doc = new Documents
             {
                 Version = "1.36",
-                Multi_pack = new Multi_pack()
+                Multi_pack = new Multi_pack
+                {
+                    Action_id = "915",
+                    Subject_id = headerData.HubSubjectId,
+                    Operation_date = $"{timestamp:yyyy-MM-ddTHH:mm:ss}+03:00"
+                }
             };
             string marker;
-            doc.Multi_pack.Action_id = "915";
-            doc.Multi_pack.Subject_id = headerData.HubSubjectId;
 
-            doc.Multi_pack.Operation_date = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00";
-
-            if (data.First().Content.First().Length > 13)
+            if (data.First().Content.First().Length > SsccLenght)
             {
                 doc.Multi_pack.By_sscc = new By_sscc
                 {
-                    Detail = new List<Detail>()
-                };
-
-                for (int i = 0; i < data.Count(); i++)
-                {
-                    doc.Multi_pack.By_sscc.Detail.Add(new Detail 
-                    { 
-                        Sscc = data[i].ParentContainer,
-                        Content = new Content 
-                        { 
-                            Sscc = data[i].Content 
+                    Detail = data.Select(fragment => new Detail
+                    {
+                        Sscc = fragment.ParentContainer,
+                        Content = new Content
+                        {
+                            Sscc = fragment.Content.ToList()
                         }
-                    });
-                }
+                    }).ToList()
+                };
 
                 marker = "pallet";
             }
@@ -92,44 +91,34 @@ namespace ImportTransformer.Controller
             {
                 doc.Multi_pack.By_sgtin = new By_sgtin
                 {
-                    Detail = new List<Detail>()
-                };
-
-                for (int i = 0; i < data.Count(); i++)
-                {
-                    doc.Multi_pack.By_sgtin.Detail.Add(new Detail 
-                    { 
-                        Sscc = data[i].ParentContainer,
-                        Content = new Content
+                    Detail = data.Select(fragment => new Detail
                         {
-                            Sgtin = new List<string>()
-                        }
-                    });
-
-                    for (int j = 0; j < data[i].Content.Count(); j++)
-                    {
-                        doc.Multi_pack.By_sgtin.Detail[i].Content.Sgtin.Add(gtin + data[i].Content[j]);
-                    }
-                }
+                            Sscc = fragment.ParentContainer,
+                            Content = new Content
+                            {
+                                Sgtin = fragment.Content.Select(s => gtin + s).ToList()
+                            }
+                        }).ToList()
+                };
 
                 marker = "case";
             }
 
-            string newPath = path + $@"\forUpload\915-st_format_{timestamp:yyyyMMddHHmmss}_{marker}.xml";
+            var newPath = path + $@"\forUpload\915-st_format_{timestamp:yyyyMMddHHmmss}_{marker}.xml";
 
-            Serializer.SerializerXml(newPath, doc);
+            doc.SerializerXml(newPath);
         }
 
-        public static void CreateTransferCodeToCustomMessages(IEnumerable<CryptoCode> data, MsgHeaderData headerData, string path, DateTime timestamp)
+        public static void CreateTransferCodeToCustomMessages(this IEnumerable<CryptoCode> data, MsgHeaderData headerData, string path, DateTime timestamp)
         {
-            Documents doc = new Documents
+            var doc = new Documents
             {
                 Version = "1.36",
                 Session_ui = "4Aa246a6-D7e2-2465-a056-0234554369a3",
                 Transfer_code_to_custom = new Transfer_code_to_custom 
                 {
                     Action_id = "300",
-                    Operation_date = timestamp.ToString("yyyy-MM-ddTHH:mm:ss") + "+03:00",
+                    Operation_date = $"{timestamp:yyyy-MM-ddTHH:mm:ss}+03:00",
                     Subject_id = headerData.SubjectId,
                     Custom_receiver_id = headerData.CustomReceiverId,
                     Gtin = data.FirstOrDefault().Gtin,
@@ -140,16 +129,16 @@ namespace ImportTransformer.Controller
                 }
             };
 
-            DirectoryInfo d = new DirectoryInfo(path + @"\forUpload\");
+            var d = new DirectoryInfo(path + @"\forUpload\");
             if (!d.Exists)
                 d.Create();
 
             //до 10_000 в одном файле
-            int counter = (data.Count() / 10000) + 1;
+            var counter = (data.Count() / 10000) + 1;
 
             var tasks = new List<Task>();
 
-            for (int i = 0; i < counter; i++)
+            for (var i = 0; i < counter; i++)
             {
                 var temp = data.Skip(i * 10000).Take(10000);
                 doc.Transfer_code_to_custom.Signs.Sgtin.Clear();
@@ -157,9 +146,9 @@ namespace ImportTransformer.Controller
                 {
                     doc.Transfer_code_to_custom.Signs.Sgtin.Add($"{e.Gtin}{e.Sn}");
                 }
-                string newPath = @$"{path}\forUpload\300-TransferCodeToCustom_{timestamp:yyyyMMddHHmmss}_{i + 1}.xml";
+                var newPath = @$"{path}\forUpload\300-TransferCodeToCustom_{timestamp:yyyyMMddHHmmss}_{i + 1}.xml";
 
-                tasks.Add(Task.Run(() => Serializer.SerializerXml(newPath, doc)));
+                tasks.Add(Task.Run(() => doc.SerializerXml(newPath)));
             }
 
             Task.WaitAll(tasks.ToArray());
@@ -167,9 +156,9 @@ namespace ImportTransformer.Controller
             logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
-        public static void CreateForeignEmissionMessages(IEnumerable<CryptoCode> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
+        public static void CreateForeignEmissionMessages(this IEnumerable<CryptoCode> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
         {
-            Documents doc = new Documents
+            var doc = new Documents
             {
                 Version = "1.35",
                 Foreign_emission = new Foreign_emission 
@@ -194,18 +183,18 @@ namespace ImportTransformer.Controller
                 doc.Foreign_emission.Signs.Sgtin.Add(support.Gtin + e.Sn);
             }
 
-            string newPath = path + @$"\forUpload\321-st_format_{timestamp:yyyyMMddHHmmss}_{support.Batch}.xml";
+            var newPath = path + @$"\forUpload\321-st_format_{timestamp:yyyyMMddHHmmss}_{support.Batch}.xml";
 
-            Serializer.SerializerXml(newPath, doc);
+            doc.SerializerXml(newPath);
         }
 
-        public static void CreateForeignShipmentMessages(IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
+        public static void CreateForeignShipmentMessages(this IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
         {
             //до 25_000 в одном файле
 
-            int counter = (data.Count() / 25000) + 1;
+            var counter = (data.Count() / 25000) + 1;
 
-            Documents doc = new Documents
+            var doc = new Documents
             {
                 Version = "1.36",
                 Foreign_shipment = new Foreign_shipment 
@@ -228,7 +217,7 @@ namespace ImportTransformer.Controller
 
             var tasks = new List<Task>();
 
-            for (int i = 0; i < counter; i++)
+            for (var i = 0; i < counter; i++)
             {
                 var temp = data.Skip(i * 25000).Take(25000);
                 doc.Foreign_shipment.Order_details.Sscc.Clear();
@@ -237,9 +226,9 @@ namespace ImportTransformer.Controller
                     doc.Foreign_shipment.Order_details.Sscc.Add(e.ParentContainer);
                 }
 
-                string newPath = $@"{path}\forUpload\331-st_format_{timestamp:yyyyMMddHHmmss}_{support.DocNum}_{i + 1}.xml";
+                var newPath = $@"{path}\forUpload\331-st_format_{timestamp:yyyyMMddHHmmss}_{support.DocNum}_{i + 1}.xml";
 
-                tasks.Add(Task.Run(() => Serializer.SerializerXml(newPath, doc)));
+                tasks.Add(Task.Run(() => doc.SerializerXml(newPath)));
             }
 
             Task.WaitAll(tasks.ToArray());
@@ -247,13 +236,13 @@ namespace ImportTransformer.Controller
             logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
-        public static void CreateImportInfoMessages(IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
+        public static void CreateImportInfoMessages(this IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
         {
             //до 25_000 в одном файле
 
-            int counter = (data.Count() / 25000) + 1;
+            var counter = (data.Count() / 25000) + 1;
 
-            Documents doc = new Documents
+            var doc = new Documents
             {
                 Version = "1.36",
                 Session_ui = "4Aa246a6-D7e2-2465-a056-0234554369a3",
@@ -276,7 +265,7 @@ namespace ImportTransformer.Controller
 
             var tasks = new List<Task>();
 
-            for (int i = 0; i < counter; i++)
+            for (var i = 0; i < counter; i++)
             {
                 var temp = data.Skip(i * 25000).Take(25000);
                 doc.Import_info.Order_details.Sscc.Clear();
@@ -285,9 +274,9 @@ namespace ImportTransformer.Controller
                     doc.Import_info.Order_details.Sscc.Add(e.ParentContainer);
                 }
 
-                string newPath = $@"{path}\forUpload\336-st_format_{timestamp:yyyyMMddHHmmss}_{support.DocNum}_{i + 1}.xml";
+                var newPath = $@"{path}\forUpload\336-st_format_{timestamp:yyyyMMddHHmmss}_{support.DocNum}_{i + 1}.xml";
 
-                tasks.Add(Task.Run(() => Serializer.SerializerXml(newPath, doc)));
+                tasks.Add(Task.Run(() => doc.SerializerXml(newPath)));
             }
 
             Task.WaitAll(tasks.ToArray());
