@@ -9,10 +9,6 @@ namespace ImportTransformer.Model
             this.ParentContainer = parentContainer;
             this.Content = content;
         }
-        public SantensReport()
-        {
-            Content = new List<string>();
-        }
 
         public string ParentContainer { get; set; }
         public List<string> Content { get; set; }
