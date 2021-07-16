@@ -21,6 +21,12 @@ namespace ImportTransformer.Controller
 
             paths.Results = Directory.GetCurrentDirectory();
 
+            var pathForUpload = Path.Combine(paths.Results, "forUpload");
+            if (!Directory.Exists(pathForUpload))
+            {
+                Directory.CreateDirectory(pathForUpload);
+            }
+
             var timestamp = DateTime.Now;
 
             var ssccReport = paths.Santens.InputReport(0);

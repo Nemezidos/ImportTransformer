@@ -26,7 +26,7 @@ namespace ImportTransformer.Controller
 
         public static void SplitAllMultiPackInDir(string dir)
         {
-            var files = Directory.GetFiles(dir + @"\forUpload", "*915*.xml")
+            var files = Directory.GetFiles(dir, "*915*.xml")
                 .Where(s => new FileInfo(s).Length >= MaxSize)
                 .Select(s => new { filepath = s, fileSize = new FileInfo(s).Length });
 
@@ -74,7 +74,7 @@ namespace ImportTransformer.Controller
                         }
                     }
                 };
-                tasks.Add(Task.Run(() => splittedDoc.SerializerXml(dir + @"\forUpload\" + tempName)));
+                tasks.Add(Task.Run(() => splittedDoc.SerializerXml(dir + @"/forUpload"+ tempName)));
             }
 
             Task.WaitAll(tasks.ToArray());

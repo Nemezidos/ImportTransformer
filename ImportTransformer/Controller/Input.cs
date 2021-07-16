@@ -97,19 +97,23 @@ namespace ImportTransformer.Controller
 
             var blocks = new List<int>();
 
-            for (var rowNum = 4; rowNum <= totalRows; rowNum++)
+            for (var rowNum = 1; rowNum <= totalRows; rowNum++)
             {
                 if (myWorksheet.Cells[rowNum, 2].Value != null)
+                {
+                    rowNum++;
                     blocks.Add(rowNum);
+                }
             }
+
             blocks.Add(totalRows);
 
-            for (var i = 0; i < blocks.Count(); i += 2)
+            for (var i = 0; i < blocks.Count-1; i++)
             {
                 var temp = new List<string>();
 
                 var startRow = blocks[i] + 3;
-                var lastRow = blocks[i + 1] - 2;
+                var lastRow = blocks[i + 1] >= totalRows ? totalRows : blocks[i + 1] - 2;
 
                 for (var j = startRow; j <= lastRow; j++)
                 {

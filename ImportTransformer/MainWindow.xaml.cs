@@ -3,6 +3,7 @@ using ImportTransformer.Model;
 using Microsoft.Win32;
 using System;
 using System.IO;
+using System.Media;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
@@ -165,7 +166,12 @@ namespace ImportTransformer
             try
             {
                 if (InputCheck(out var paths))
+                {
                     Core.DoMessages(paths, needs);
+                    SystemSounds.Hand.Play();
+                    MessageBox.Show("Все отчеты сформированы", "It is done!", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
                 else
                     MessageBox.Show("Заполнено не всё!\nДальнейшая работа невозможна.");
             }
