@@ -12,6 +12,10 @@ namespace ImportTransformer.Controller
     static class Output
     {
         private const int SsccLenght = 13;
+        private const int MaxCapacityOfUtilisationReport = 30000;
+        private const int MaxCapacityOfTransferCodeToCustomMessages = 10000;
+        private const int MaxCapacityOfCreateForeignShipmentMessages = 25000;
+        private const int MaxCapacityOfImportInfoMessages = 25000;
         
         private static Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -25,12 +29,14 @@ namespace ImportTransformer.Controller
         {
             var tasks = new List<Task>();
 
-            var counter = codes.Count() / 30000 + 1;
+            var counter = codes.Count() / MaxCapacityOfUtilisationReport;
+            if (codes.Count() % MaxCapacityOfUtilisationReport != 0)
+                counter++;
             //до 30_000 в одном файле
 
             for (var i = 0; i < counter; i++)
             {
-                var temp = codes.Skip(i * 30000).Take(30000);
+                var temp = codes.Skip(i * MaxCapacityOfUtilisationReport).Take(MaxCapacityOfUtilisationReport);
 
                 var newPath = @$"{path}\forUpload\UtilReport_{timestamp:yyyyMMddHHmmss}_{i + 1}.csv";
 
@@ -122,10 +128,7 @@ namespace ImportTransformer.Controller
                     SubjectId = headerData.SubjectId,
                     CustomReceiverId = headerData.CustomReceiverId,
                     Gtin = data.FirstOrDefault().Gtin,
-                    Signs = new Signs
-                    {
-                        Sgtin = new List<string>()
-                    }
+                    Signs = new Signs()
                 }
             };
 
@@ -134,26 +137,30 @@ namespace ImportTransformer.Controller
                 d.Create();
 
             //до 10_000 в одном файле
-            var counter = data.Count() / 10000 + 1;
+            var counter = data.Count() / MaxCapacityOfTransferCodeToCustomMessages;
+            if (data.Count() % MaxCapacityOfTransferCodeToCustomMessages != 0)
+                counter++;
 
-            var tasks = new List<Task>();
+            //var tasks = new List<Task>();
 
             for (var i = 0; i < counter; i++)
             {
-                var temp = data.Skip(i * 10000).Take(10000);
-                doc.TransferCodeToCustom.Signs.Sgtin.Clear();
-                foreach (var e in temp)
-                {
-                    doc.TransferCodeToCustom.Signs.Sgtin.Add($"{e.Gtin}{e.Sn}");
-                }
+                var temp = data.Skip(i * MaxCapacityOfTransferCodeToCustomMessages)
+                    .Take(MaxCapacityOfTransferCodeToCustomMessages).Select(s => $"{s.Gtin}{s.Sn}").ToList();
+                doc.TransferCodeToCustom.Signs.Sgtin = temp;
+                //foreach (var e in temp)
+                //{
+                //    doc.TransferCodeToCustom.Signs.Sgtin.Add($"{e.Gtin}{e.Sn}");
+                //}
                 var newPath = @$"{path}\forUpload\300-TransferCodeToCustom_{timestamp:yyyyMMddHHmmss}_{i + 1}.xml";
 
-                tasks.Add(Task.Run(() => doc.SerializerXml(newPath)));
+                //tasks.Add(Task.Run(() => doc.SerializerXml(newPath)));
+                doc.SerializerXml(newPath);
             }
 
-            Task.WaitAll(tasks.ToArray());
+            //Task.WaitAll(tasks.ToArray());
 
-            _logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
+            //_logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
         }
 
         public static void CreateForeignEmissionMessages(this IEnumerable<CryptoCode> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
@@ -192,7 +199,9 @@ namespace ImportTransformer.Controller
         {
             //до 25_000 в одном файле
 
-            var counter = data.Count() / 25000 + 1;
+            var counter = data.Count() / MaxCapacityOfCreateForeignShipmentMessages;
+            if (data.Count() % MaxCapacityOfCreateForeignShipmentMessages != 0)
+                counter++;
 
             var doc = new Documents
             {
@@ -219,7 +228,8 @@ namespace ImportTransformer.Controller
 
             for (var i = 0; i < counter; i++)
             {
-                var temp = data.Skip(i * 25000).Take(25000);
+                var temp = data.Skip(i * MaxCapacityOfCreateForeignShipmentMessages)
+                    .Take(MaxCapacityOfCreateForeignShipmentMessages);
                 doc.ForeignShipment.OrderDetails.Sscc.Clear();
                 foreach (var e in temp)
                 {
@@ -240,7 +250,9 @@ namespace ImportTransformer.Controller
         {
             //до 25_000 в одном файле
 
-            var counter = data.Count() / 25000 + 1;
+            var counter = data.Count() / MaxCapacityOfImportInfoMessages;
+            if (data.Count() % MaxCapacityOfImportInfoMessages != 0)
+                counter++;
 
             var doc = new Documents
             {
@@ -267,7 +279,7 @@ namespace ImportTransformer.Controller
 
             for (var i = 0; i < counter; i++)
             {
-                var temp = data.Skip(i * 25000).Take(25000);
+                var temp = data.Skip(i * MaxCapacityOfImportInfoMessages).Take(MaxCapacityOfImportInfoMessages);
                 doc.ImportInfo.OrderDetails.Sscc.Clear();
                 foreach (var e in temp)
                 {
