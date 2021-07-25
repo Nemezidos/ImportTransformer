@@ -12,19 +12,49 @@ namespace ImportTransformer.Controller
     static class Output
     {
         private const int SsccLenght = 13;
-        private const int MaxCapacityOfUtilisationReport = 30000;
-        private const int MaxCapacityOfTransferCodeToCustomMessages = 10000;
-        private const int MaxCapacityOfCreateForeignShipmentMessages = 25000;
-        private const int MaxCapacityOfImportInfoMessages = 25000;
+        private const int MaxCapacityOfOrderReport = 150_000;
+        private const int MaxCapacityOfUtilisationReport = 30_000;
+        private const int MaxCapacityOfTransferCodeToCustomMessages = 10_000;
+        private const int MaxCapacityOfCreateForeignShipmentMessages = 25_000;
+        private const int MaxCapacityOfImportInfoMessages = 25_000;
         
         private static Logger _logger = LogManager.GetCurrentClassLogger();
 
-        /// <summary>
-        /// Создаёт утилизейшон репорты
-        /// </summary>
-        /// <param name="codes"></param>
-        /// <param name="path"></param>
-        /// <param name="timestamp"></param>
+        public static void CreateOrderReport(this IEnumerable<CryptoCode> codes, string path, DateTime timestamp)
+        {
+            var tasks = new List<Task>();
+
+            var counter = codes.Count() / MaxCapacityOfOrderReport;
+            if (codes.Count() % MaxCapacityOfOrderReport != 0)
+                counter++;
+
+            for (var i = 0; i < counter; i++)
+            {
+                var temp = codes.Skip(i * MaxCapacityOfOrderReport).Take(MaxCapacityOfOrderReport).Select(c => c.Sn);
+
+                var newPath = @$"{path}\forUpload\OrderReport_{timestamp:yyyyMMddHHmmss}_{i + 1}.csv";
+
+                tasks.Add(Task.Run(() => CreateSingleOrder(temp, newPath)));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+            _logger.Info($"Создано {tasks.Select(s => s.IsCompleted).Count()} документов. Должно быть: {counter}");
+        }
+        
+        private static void CreateSingleOrder(IEnumerable<string> serialNumbers, string path)
+        {
+            using (var sw = new StreamWriter(path, false, new UTF8Encoding(false)))
+            {
+                foreach (var e in serialNumbers)
+                {
+                    sw.WriteLine(e);
+                }
+            }
+
+            _logger.Info($"Создан файл заказа: {path}");
+        }
+        
         public static void CreateUtilisationReport(this IEnumerable<CryptoCode> codes, string path, DateTime timestamp)
         {
             var tasks = new List<Task>();
@@ -32,7 +62,6 @@ namespace ImportTransformer.Controller
             var counter = codes.Count() / MaxCapacityOfUtilisationReport;
             if (codes.Count() % MaxCapacityOfUtilisationReport != 0)
                 counter++;
-            //до 30_000 в одном файле
 
             for (var i = 0; i < counter; i++)
             {
@@ -50,7 +79,7 @@ namespace ImportTransformer.Controller
 
         private static void CreateSingleUtil(IEnumerable<CryptoCode> cryptoCodes, string path)
         {
-            const char gs = (char) 29; //Encoding.ASCII.GetString(new byte[] { 29 });
+            const char gs = (char) 29;
 
             using (var sw = new StreamWriter(path, false, new UTF8Encoding(false)))
             {
@@ -135,8 +164,7 @@ namespace ImportTransformer.Controller
             var d = new DirectoryInfo(path + @"\forUpload\");
             if (!d.Exists)
                 d.Create();
-
-            //до 10_000 в одном файле
+            
             var counter = data.Count() / MaxCapacityOfTransferCodeToCustomMessages;
             if (data.Count() % MaxCapacityOfTransferCodeToCustomMessages != 0)
                 counter++;
@@ -197,8 +225,6 @@ namespace ImportTransformer.Controller
 
         public static void CreateForeignShipmentMessages(this IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
         {
-            //до 25_000 в одном файле
-
             var counter = data.Count() / MaxCapacityOfCreateForeignShipmentMessages;
             if (data.Count() % MaxCapacityOfCreateForeignShipmentMessages != 0)
                 counter++;
@@ -248,8 +274,6 @@ namespace ImportTransformer.Controller
 
         public static void CreateImportInfoMessages(this IEnumerable<SantensReport> data, MsgHeaderData headerData, SupportDate support, string path, DateTime timestamp)
         {
-            //до 25_000 в одном файле
-
             var counter = data.Count() / MaxCapacityOfImportInfoMessages;
             if (data.Count() % MaxCapacityOfImportInfoMessages != 0)
                 counter++;

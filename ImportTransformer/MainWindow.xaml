@@ -7,7 +7,7 @@
         xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
         Title="Utrace: Allergan. Маркировка на ТС" 
-        Height="465" 
+        Height="475" 
         Width="810"
         >
     <Window.Resources>
@@ -158,7 +158,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     
-                    <CheckBox Content="Util+300+321"
+                    <CheckBox Content="Order+Util+300+321"
                       Grid.Column="0"
                       Margin="3"
                       HorizontalAlignment="Center"

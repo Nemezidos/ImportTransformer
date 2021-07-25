@@ -13,6 +13,9 @@ namespace ImportTransformer.Controller
 {
     public static class Core
     {
+        private const int SsccPageOfSantensReport = 0;
+        private const int SgtinPageOfSantensReport = 1;
+        
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public static void DoMessages(FilePaths paths, PartsNeeded needs)
         {
@@ -29,8 +32,8 @@ namespace ImportTransformer.Controller
 
             var timestamp = DateTime.Now;
 
-            var ssccReport = paths.Santens.InputReport(0);
-            var sgtinReport = paths.Santens.InputReport(1);
+            var ssccReport = paths.Santens.InputReport(SsccPageOfSantensReport);
+            var sgtinReport = paths.Santens.InputReport(SgtinPageOfSantensReport);
 
             var codes = paths.Tracelink.InputCsv();
             var filteredCodes = codes.Filter(sgtinReport);
@@ -44,6 +47,7 @@ namespace ImportTransformer.Controller
 
             if (needs.FirstPart)
             {
+                filteredCodes.CreateOrderReport(paths.Results, timestamp);
                 filteredCodes.CreateUtilisationReport(paths.Results, timestamp);
                 filteredCodes.CreateTransferCodeToCustomMessages(header, paths.Results, timestamp);
                 filteredCodes.CreateForeignEmissionMessages(header, supportData, paths.Results, timestamp);
@@ -64,7 +68,7 @@ namespace ImportTransformer.Controller
             sw.Stop();
 
             Logger.Info(
-                $"Скрипт исполнен за {Convert.ToString(sw.Elapsed.TotalMilliseconds, CultureInfo.InvariantCulture)} миллисекунд(ы)");
+                $"Скрипт исполнен за {Convert.ToString(sw.Elapsed.TotalSeconds, CultureInfo.InvariantCulture)} секунд(ы)");
         }
 
         public static string ExistHeaders()
