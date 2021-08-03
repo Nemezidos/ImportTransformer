@@ -106,7 +106,15 @@ namespace ImportTransformer.Controller
                 }
             }
 
-            blocks.Add(totalRows);
+            for (var i = blocks.Last() + 2; i < totalRows; i++)
+            {
+                if (myWorksheet.Cells[i, 4].Value == null
+                    || string.IsNullOrEmpty(myWorksheet.Cells[i, 4].Value.ToString())
+                    || string.IsNullOrWhiteSpace(myWorksheet.Cells[i, 4].Value.ToString()))
+                    totalRows = i;
+            }
+
+            blocks.Add(totalRows+2);
 
             for (var i = 0; i < blocks.Count-1; i++)
             {

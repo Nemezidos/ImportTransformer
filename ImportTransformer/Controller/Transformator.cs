@@ -74,7 +74,7 @@ namespace ImportTransformer.Controller
                         }
                     }
                 };
-                tasks.Add(Task.Run(() => splittedDoc.SerializerXml(dir + @"/forUpload"+ tempName)));
+                tasks.Add(Task.Run(() => splittedDoc.SerializerXml(dir + @"/"+ tempName)));
             }
 
             Task.WaitAll(tasks.ToArray());
